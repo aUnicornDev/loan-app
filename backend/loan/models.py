@@ -1,8 +1,7 @@
 from django.db import models
-
-from django.db import models
 from django.db.models.functions import Now
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import User
 
 
 # Create your models here.
@@ -20,6 +19,7 @@ class Loan(models.Model):
     term = models.CharField(max_length=10,choices=PaymentTerm,default=PaymentTerm.WEEKLY)
     startDate = models.DateField()
     frequency = models.IntegerField()
+    createdBy = models.ForeignKey(User, on_delete=models.CASCADE)
     created = models.DateTimeField(db_default=Now(),default=Now())
 
 

@@ -24,7 +24,7 @@ class LoanListView(APIView):
             loan = Loan.objects.get(id = id)
             loan_serializer = LoanSerializer(loan)
         else:
-            loan = Loan.objects.all()
+            loan = Loan.objects.filter(createdBy_id = user)
             loan_serializer = LoanSerializer(loan, many=True)
         return Response(loan_serializer.data, status=status.HTTP_200_OK)
 
@@ -38,8 +38,7 @@ class LoanListView(APIView):
         frequency = request.data.get('frequency')
         startDate = parse(startDate)
 
-        loan = Loan.objects.create(notional=notional, startDate=startDate.date(), term=term, frequency = frequency)
-
+        loan = Loan.objects.create(notional=notional, startDate=startDate.date(), term=term, frequency = frequency,createdBy = request.user)
 
         amount = notional/frequency
         count = 1
@@ -65,6 +64,7 @@ class LoanApprovalView(APIView):
         if 'loanSysId' in kwargs:
             id = kwargs.get('loanSysId')
             loan = Loan.objects.get(id = id)
+            #Check if Loan object is already Approved
             loan.status = WorkflowStatus.APPROVED
             loan_serializer = LoanSerializer(loan)
 
