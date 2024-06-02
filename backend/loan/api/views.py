@@ -1,19 +1,24 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from .serializers import LoanSerializer,PaymentSerializer
-from ..models import Loan,Payment
+from ..models import Loan, Payment, WorkflowStatus
 from dateutil.relativedelta import *
 from dateutil.parser import parse
+from rest_framework.authtoken.models import Token
 
 class LoanListView(APIView):
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
+
     def get(self, request, *args, **kwargs):
         '''
         List all the loans
         '''
-
+        token = request.auth.key
+        user = Token.objects.get(key=token).user_id
+        print(user)
         if 'loanSysId' in kwargs:
             id = kwargs.get('loanSysId')
             loan = Loan.objects.get(id = id)
@@ -49,6 +54,21 @@ class LoanListView(APIView):
 
 
 
+class LoanApprovalView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request,*args, **kwargs):
+        '''
+        Create loan object and its underlying payment objects
+        '''
+
+        if 'loanSysId' in kwargs:
+            id = kwargs.get('loanSysId')
+            loan = Loan.objects.get(id = id)
+            loan.status = WorkflowStatus.APPROVED
+            loan_serializer = LoanSerializer(loan)
+
+        return Response(loan_serializer.data, status=status.HTTP_200_OK)
 
 
 class PaymentListView(APIView):
