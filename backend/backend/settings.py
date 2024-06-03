@@ -56,7 +56,12 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    "DATE_INPUT_FORMATS": ["%d-%m-%Y"]
+    "DATE_INPUT_FORMATS": ["%d-%m-%Y"],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'COERCE_DECIMAL_TO_STRING': False
 }
 ROOT_URLCONF = 'backend.urls'
 

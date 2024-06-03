@@ -68,6 +68,7 @@ class LoanApprovalView(APIView):
             loan = Loan.objects.get(id = id)
             #Check if Loan object is already Approved
             loan.status = WorkflowStatus.APPROVED
+            loan.save()
             loan_serializer = LoanSerializer(loan)
 
         return Response(loan_serializer.data, status=status.HTTP_201_CREATED)
@@ -95,8 +96,11 @@ class PaymentListView(APIView):
         Create loan object and its underlying payment objects
         '''
         if 'loanSysId' in kwargs:
+
             repayment_amount = round(Decimal(request.data.get('amount')), 6)
             id = kwargs.get('loanSysId')
+            if Loan.objects.get(id = id).status != WorkflowStatus.APPROVED:
+                return Response("Cannot add payments. The loan is under approval", status=status.HTTP_428_PRECONDITION_REQUIRED)
             if 'paymentSysId' in kwargs:
                 payment_id =  kwargs.get('paymentSysId')
                 payment = Payment.objects.get(id=payment_id)
@@ -129,11 +133,13 @@ class PaymentListView(APIView):
 
                 else:
                     Repayment.objects.create(amount=repayment_amount, payment_id=payment.id)
+                payments = Payment.objects.get(id=payment_id, loanSysId_id=id)
+                payment_serializer = PaymentSerializer(payments)
+                return Response(payment_serializer.data, status=status.HTTP_201_CREATED)
+
             else:
                 prepayment_amount = repayment_amount
-                payments = Payment.objects.filter(status=WorkflowStatus.PENDING, loanSysId_id=id).order_by(
-                    'id')
-                # payment_id = payments[0].id
+                payments = Payment.objects.filter(status=WorkflowStatus.PENDING, loanSysId_id=id).order_by('id')
                 for idx, payment in enumerate(payments):
                     if idx < len(payments) and prepayment_amount > payment.balance_amount:
                         prepayment_amount -= payment.balance_amount
@@ -145,6 +151,10 @@ class PaymentListView(APIView):
                         # payment_obj = Payment.objects.get(id=payment.id, loanSysId_id=id)
                         Repayment.objects.create(amount=prepayment_amount, payment_id=payment.id)
                         break
+
+                loan = Loan.objects.get(id=id)
+                loan_serializer = LoanSerializer(loan)
+                return Response(loan_serializer.data, status=status.HTTP_201_CREATED)
 
 
 
