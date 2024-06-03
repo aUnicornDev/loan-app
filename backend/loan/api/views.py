@@ -1,12 +1,14 @@
+from django.core.handlers import exception
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from .serializers import LoanSerializer,PaymentSerializer
-from ..models import Loan, Payment, WorkflowStatus
+from ..models import Loan, Payment, WorkflowStatus,Repayment
 from dateutil.relativedelta import *
 from dateutil.parser import parse
 from rest_framework.authtoken.models import Token
+from decimal import Decimal
 
 class LoanListView(APIView):
     permission_classes = [IsAuthenticated]
@@ -49,7 +51,7 @@ class LoanListView(APIView):
 
         loan_serializer = LoanSerializer(loan)
 
-        return Response(loan_serializer.data, status=status.HTTP_200_OK)
+        return Response(loan_serializer.data, status=status.HTTP_201_CREATED)
 
 
 
@@ -68,7 +70,7 @@ class LoanApprovalView(APIView):
             loan.status = WorkflowStatus.APPROVED
             loan_serializer = LoanSerializer(loan)
 
-        return Response(loan_serializer.data, status=status.HTTP_200_OK)
+        return Response(loan_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class PaymentListView(APIView):
@@ -88,29 +90,65 @@ class PaymentListView(APIView):
             payment_serializer = PaymentSerializer(payments,many=True)
         return Response(payment_serializer.data, status=status.HTTP_200_OK)
 
-    def post(self,request):
+    def post(self,request,*args, **kwargs):
         '''
         Create loan object and its underlying payment objects
         '''
-        notional = request.data.get('notional')
-        startDate = request.data.get('startDate')
-        term = request.data.get('term')
-        frequency = request.data.get('frequency')
-        startDate = parse(startDate)
+        if 'loanSysId' in kwargs:
+            repayment_amount = round(Decimal(request.data.get('amount')), 6)
+            id = kwargs.get('loanSysId')
+            if 'paymentSysId' in kwargs:
+                payment_id =  kwargs.get('paymentSysId')
+                payment = Payment.objects.get(id=payment_id)
+                if payment.status == WorkflowStatus.PAID:
+                    return Response("Already Paid", status=status.HTTP_200_OK)
 
-        loan = Loan.objects.create(notional=notional, startDate=startDate.date(), term=term, frequency = frequency)
+                if repayment_amount >= payment.balance_amount:
+                    prepayment_amount = repayment_amount - payment.balance_amount
+                    Repayment.objects.create(amount=payment.balance_amount, payment_id=payment.id)
+                    payment.status = WorkflowStatus.PAID
+                    payment.save()
+
+                    if prepayment_amount > 0:
+                        payments = Payment.objects.filter(status=WorkflowStatus.PENDING, loanSysId_id=id).order_by(
+                            'id')
+                        # payment_id = payments[0].id
+                        for idx, payment in enumerate(payments):
+                            if idx < len(payments) and prepayment_amount > payment.balance_amount:
+                                prepayment_amount -= payment.balance_amount
+                                Repayment.objects.create(amount=payment.balance_amount, payment_id=payment.id)
+                                payment_obj = Payment.objects.get(id=payment.id, loanSysId_id=id)
+                                payment_obj.status = WorkflowStatus.PAID
+                                payment_obj.save()
+                            else:
+                                # payment_obj = Payment.objects.get(id=payment.id, loanSysId_id=id)
+                                Repayment.objects.create(amount=prepayment_amount, payment_id=payment.id)
+                                break
+
+                    # repayment_amount = prepayment_amount
+
+                else:
+                    Repayment.objects.create(amount=repayment_amount, payment_id=payment.id)
+            else:
+                prepayment_amount = repayment_amount
+                payments = Payment.objects.filter(status=WorkflowStatus.PENDING, loanSysId_id=id).order_by(
+                    'id')
+                # payment_id = payments[0].id
+                for idx, payment in enumerate(payments):
+                    if idx < len(payments) and prepayment_amount > payment.balance_amount:
+                        prepayment_amount -= payment.balance_amount
+                        Repayment.objects.create(amount=payment.balance_amount, payment_id=payment.id)
+                        payment_obj = Payment.objects.get(id=payment.id, loanSysId_id=id)
+                        payment_obj.status = WorkflowStatus.PAID
+                        payment_obj.save()
+                    else:
+                        # payment_obj = Payment.objects.get(id=payment.id, loanSysId_id=id)
+                        Repayment.objects.create(amount=prepayment_amount, payment_id=payment.id)
+                        break
 
 
-        amount = notional/frequency
-        count = 1
-        while count <= frequency:
-            paymentDate = startDate + relativedelta(weeks=count)
-            Payment.objects.create(loanSysId = loan,paymentDate = paymentDate.date(), amount = amount)
-            count+=1
 
-        loan_serializer = LoanSerializer(loan)
-
-        return Response(loan_serializer.data, status=status.HTTP_200_OK)
+        return Response("", status=status.HTTP_200_OK)
 
 
 
