@@ -20,32 +20,35 @@ class Loan(models.Model):
     status = models.CharField(max_length=10,choices=WorkflowStatus,default=WorkflowStatus.PENDING)
     notional = models.DecimalField( max_digits=19, decimal_places=6)
     term = models.CharField(max_length=10,choices=PaymentTerm,default=PaymentTerm.WEEKLY)
-    startDate = models.DateField()
+    start_date = models.DateField()
     frequency = models.IntegerField()
-    createdBy = models.ForeignKey(User, on_delete=models.CASCADE)
-    created = models.DateTimeField(default=now)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=now)
 
     @property
-    def total_repayed_amount(self):
-        total_repayed = sum(payment.repayed_amount for payment in self.payment_set.all())
-        return total_repayed
+    def total_cumulative_repayments(self):
+        total = sum(payment.cumulative_repayments for payment in self.payment_set.all())
+        return Decimal(total).quantize(Decimal('.1') ** 6)
 
+    @property
+    def total_outstanding_balance(self):
+        return self.notional - self.total_cumulative_repayments
 
 
 class Payment(models.Model):
-    loanSysId = models.ForeignKey(Loan, on_delete=models.CASCADE)
-    paymentDate = models.DateField()
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
+    payment_date = models.DateField()
     status = models.CharField(max_length=10, choices=WorkflowStatus, default=WorkflowStatus.PENDING)
     amount = models.DecimalField( max_digits=19, decimal_places=6)
 
     @property
-    def repayed_amount(self):
+    def cumulative_repayments(self):
         total = self.repayment_set.aggregate(total=Sum('amount'))['total']
-        return total if total is not None else Decimal(0)
+        return Decimal(total).quantize(Decimal('.1') ** 6) if total is not None else Decimal(0)
 
     @property
-    def balance_amount(self):
-        return round(self.amount - self.repayed_amount,6)
+    def outstanding_balance(self):
+        return self.amount - self.cumulative_repayments
 
 
 class Repayment(models.Model):

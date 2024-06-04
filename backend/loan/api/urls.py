@@ -1,16 +1,15 @@
-
 from django.urls import path, include
-from .views import LoanListView,PaymentListView,LoanApprovalView
+from rest_framework import routers
+
+from .views import PaymentViewSet,LoanViewSet,RepaymentViewSet
+
+router = routers.DefaultRouter()
+router.register(r'', LoanViewSet)
 
 urlpatterns = [
-    path('', LoanListView.as_view(),name = 'list_loan'),
-    path('<int:loanSysId>/', LoanListView.as_view(),name = 'view_loan'),
 
-    path('<int:loanSysId>/approve', LoanApprovalView.as_view(),name = 'approve_loan'),
-
-    path('<int:loanSysId>/payment/<int:paymentSysId>', PaymentListView.as_view(),name = 'view_payment'),
-    path('<int:loanSysId>/payment/', PaymentListView.as_view(),name = 'list_payment'),
-
-    path('<int:loanSysId>/repayment/<int:paymentSysId>', PaymentListView.as_view(),name = 'add_repayment'),
-    path('<int:loanSysId>/prepayment/', PaymentListView.as_view(),name = 'add_prepayment'),
+    path('', include(router.urls)),
+    path('<int:loan_id>/payment/<int:payment_id>/', PaymentViewSet.as_view({'get': 'retrieve'}),name = 'payment-detail'),
+    path('<int:loan_id>/repayment/<int:payment_id>/', RepaymentViewSet.as_view({'post': 'create'}),name = 'repayment'),
+    path('<int:loan_id>/prepayment/', RepaymentViewSet.as_view({'post': 'create'}),name = 'prepayment')
 ]
