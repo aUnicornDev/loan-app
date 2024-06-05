@@ -14,9 +14,8 @@ API For a Loan App
 * Add a Repayment on payment
 * Add a Prepayment on the loan 
 
+
 ## Installation
-
-
 
 Clone the repository
 
@@ -42,7 +41,7 @@ Migrate Changes
 
     python manage.py migrate
 
-Create User and Superuser (Optianal) -- created to be in sync with Postman API endpoints 
+Create User and Superuser (Optional) -- created to be in sync with Postman API endpoints 
     
     python manage.py populate_db
 
@@ -57,6 +56,10 @@ You can now access the server at http://localhost:8000
 To run tests (Unit and Integration)
 
     python manage.py test
+
+## Docs
+
+A very basic doc around the functionality and files is given in the doc/doc.md file.
 
 ## Postman 
 
