@@ -1,11 +1,7 @@
 from decimal import Decimal
-
-from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
-
 from ..models import Loan, Payment, Repayment, WorkflowStatus
-
-from rest_framework import serializers, status
+from rest_framework import serializers
 
 class LoanPaymentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,9 +14,16 @@ class LoanSerializer(serializers.ModelSerializer):
         model = Loan
         fields = ['id','status','notional', 'term', 'frequency', 'start_date', 'total_cumulative_repayments','payments']
         read_only_fields = ['id', 'total_cumulative_repayments']
-        extra_kwargs = {
-            'notional': {'max_digits': 16, 'decimal_places': 6}
-        }
+
+    def validate_notional(self,value):
+        if value <= 0:
+            raise serializers.ValidationError("Notional cannot be negative or 0.")
+        return value
+
+    def validate_frequency(self,value):
+        if value <= 0:
+            raise serializers.ValidationError("Frequency cannot be negative or 0.")
+        return value
 
     def create(self, validated_data):
         user = self.context['request'].user
@@ -38,7 +41,6 @@ class LoanSerializer(serializers.ModelSerializer):
             Payment.objects.create(loan = loan,payment_date = payment_date, amount = amount)
             sum_amount+=amount
             payment_count += 1
-        print(sum_amount)
         payment_date = start_date + relativedelta(weeks=payment_count)
         Payment.objects.create(loan=loan, payment_date=payment_date, amount=notional-sum_amount)
         return loan
@@ -48,16 +50,29 @@ class RepaymentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ['created_date','amount']
         model = Repayment
+
+    def validate_amount(self,value):
+        if value <= 0:
+            raise serializers.ValidationError("Amount cannot be negative or 0.")
+        return value
+
     def validate(self, data):
         amount = data['amount']
         loan_id = self.initial_data['loan_id']
+        payment_id = self.initial_data['payment_id']
         loan = Loan.objects.get(id=loan_id)
+
         if loan.status == WorkflowStatus.PAID:
             raise serializers.ValidationError("Cannot add payments. The loan is already paid.")
         elif loan.status == WorkflowStatus.PENDING:
             raise serializers.ValidationError("Cannot add payments. The loan is under approval")
         if loan.total_outstanding_balance < amount:
-            raise serializers.ValidationError("Repayment/ Prepayment amount cannot be grater than outstanding Balance.")
+            raise serializers.ValidationError("Repayment/ Prepayment amount cannot be greater than Outstanding Balance.")
+
+        if payment_id is not None:
+            payment = Payment.objects.get(id=payment_id)
+            if payment.status == WorkflowStatus.PAID:
+                raise serializers.ValidationError("Cannot add payments. The payment is already paid.")
         return data
 
     @staticmethod

@@ -2,10 +2,11 @@ from decimal import Decimal
 
 from django.db import models
 from django.db.models import Sum
-from django.db.models.functions import Now
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from django.utils.timezone import now
+from django.core.exceptions import ValidationError
+
 
 # Create your models here.
 class WorkflowStatus(models.TextChoices):
@@ -33,6 +34,9 @@ class Loan(models.Model):
     @property
     def total_outstanding_balance(self):
         return self.notional - self.total_cumulative_repayments
+
+    def __str__(self):
+        return f'{self.notional} | {self.start_date} | {self.frequency} | {self.term} '
 
 
 class Payment(models.Model):

@@ -8,7 +8,7 @@ from loan.models import Loan,Payment,Repayment,WorkflowStatus
 from rest_framework.utils import json
 
 
-class AutheticatedUser(APITestCase):
+class AuthenticatedUser(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user('testuser', 'testuser@example.com', 'testpassword')
         self.token = Token.objects.create(user=self.user)
@@ -16,7 +16,8 @@ class AutheticatedUser(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
         self.client.login(username='testuser', password='testpassword')
 
-class AuthenticatedSuperUser(AutheticatedUser):
+
+class AuthenticatedSuperUser(AuthenticatedUser):
     def setUp(self):
         super().setUp()
         self.super_user = User.objects.create_superuser('superuser', 'superuser@example.com', 'superpassword')
@@ -38,36 +39,36 @@ class TestUnAuthenticatedAPIEndpoints(APITestCase):
             "start_date": "19-03-2024"
         }
 
-    def test__GET__listLoans__whenCalledWithoutAuthentication__shouldReturnUnauthorizedStatus(self):
+    def test_GET_listLoans_whenCalledWithoutAuthentication_shouldReturnUnauthorizedStatus(self):
         response = self.client.get(reverse('loan-list'))
         self.assertEquals(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test__GET__viewLoan__whenCalledWithoutAuthentication__shouldReturnUnauthorizedStatus(self):
+    def test_GET_viewLoan_whenCalledWithoutAuthentication_shouldReturnUnauthorizedStatus(self):
         response = self.client.get(reverse('loan-detail',kwargs={"pk":1}))
         self.assertEquals(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test__POST__addLoan__whenCalledWithoutAuthentication__shouldReturnUnauthorizedStatus(self):
+    def test_POST_addLoan_whenCalledWithoutAuthentication_shouldReturnUnauthorizedStatus(self):
         response = self.client.post(reverse('loan-list'),data=json.dumps(self.loan_payload),content_type='application/json')
         self.assertEquals(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test__POST__approveLoan__whenCalledWithoutAuthentication__shouldReturnUnauthorizedStatus(self):
+    def test_POST_approveLoan_whenCalledWithoutAuthentication_shouldReturnUnauthorizedStatus(self):
         response = self.client.patch(reverse('loan-approve',kwargs={"pk":1}))
         self.assertEquals(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test__GET__viewPayment__whenCalledWithoutAuthentication__shouldReturnUnauthorizedStatus(self):
+    def test_GET_viewPayment_whenCalledWithoutAuthentication_shouldReturnUnauthorizedStatus(self):
         response = self.client.get(reverse('payment-detail',kwargs={"loan_id":1,"payment_id":1}))
         self.assertEquals(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test__GET__addRepayment__whenCalledWithoutAuthentication__shouldReturnUnauthorizedStatusStatus(self):
+    def test_GET_addRepayment_whenCalledWithoutAuthentication_shouldReturnUnauthorizedStatusStatus(self):
         response = self.client.get(reverse('repayment',kwargs={"loan_id":1,'payment_id':1}))
         self.assertEquals(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test__GET__addPrepayment__whenCalledWithoutAuthentication__shouldReturnUnauthorizedStatus(self):
+    def test_GET_addPrepayment_whenCalledWithoutAuthentication_shouldReturnUnauthorizedStatus(self):
         response = self.client.get(reverse('prepayment',kwargs={"loan_id":1}))
         self.assertEquals(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class TestAuthenticatedLoanAPIEndpoints(AutheticatedUser):
+class TestAuthenticatedLoanAPIEndpoints(AuthenticatedUser):
     def setUp(self):
         super().setUp()
         self.loan_payload = {
@@ -79,31 +80,30 @@ class TestAuthenticatedLoanAPIEndpoints(AutheticatedUser):
         self.repayment_payload = {
             "amount": 115
         }
-    def test__GET__listLoans__whenCalledWithAuthentication__shouldReturn__OKStatus(self):
+
+    def test_GET_listLoans_whenCalledWithAuthentication_shouldReturn_OKStatus(self):
         response = self.client.get(reverse('loan-list'))
         self.assertEquals(response.status_code, status.HTTP_200_OK)
 
-    def test__POST__addLoan__whenCalledWithAuthentication__shouldReturn__OKStatus(self):
+    def test_POST_addLoan_whenCalledWithAuthentication_shouldReturn_OKStatus(self):
         response = self.client.post(reverse('loan-list'),data=json.dumps(self.loan_payload),content_type='application/json')
         self.assertEquals(response.status_code, status.HTTP_201_CREATED)
 
-    def test__GET__viewLoan__whenCalledWithAuthentication__shouldReturn__OKStatus(self):
+    def test_GET_viewLoan_whenCalledWithAuthentication_shouldReturn_OKStatus(self):
         self.client.post(reverse('loan-list'), data=json.dumps(self.loan_payload),
                                     content_type='application/json')
         response = self.client.get(reverse('loan-detail',kwargs={"pk":1}))
         self.assertEquals(response.status_code, status.HTTP_200_OK)
 
-    def test__POST__approveLoan__whenCalledWithAuthentication__shouldReturn__ForbiddenStatus(self):
+    def test_POST_approveLoan_whenCalledWithAuthentication_shouldReturn_ForbiddenStatus(self):
         response = self.client.patch(reverse('loan-approve', kwargs={"pk": 1}))
         self.assertEquals(response.status_code, status.HTTP_403_FORBIDDEN)
 
-
-    def test__GET__viewPayment__whenCalledWithAuthentication__shouldReturn__OKStatus(self):
+    def test_GET_viewPayment_whenCalledWithAuthentication_shouldReturn_OKStatus(self):
         self.client.post(reverse('loan-list'), data=json.dumps(self.loan_payload),
                                     content_type='application/json')
         response = self.client.get(reverse('payment-detail', kwargs={"loan_id": 1, "payment_id": 1}))
         self.assertEquals(response.status_code, status.HTTP_200_OK)
-
 
 
 class TestSuperUserLoanAPIEndpoints(AuthenticatedSuperUser):
@@ -118,13 +118,14 @@ class TestSuperUserLoanAPIEndpoints(AuthenticatedSuperUser):
         self.repayment_payload = {
             "amount": 115
         }
-    def test__POST__approveLoan__whenCalledWithAuthentication__shouldReturn__Accepted(self):
+
+    def test_POST_approveLoan_whenCalledWithAuthentication_shouldReturn_Accepted(self):
         self.super_client.post(reverse('loan-list'), data=json.dumps(self.loan_payload),
                          content_type='application/json')
         response = self.super_client.patch(reverse('loan-approve', kwargs={"pk": 1}))
         self.assertEquals(response.status_code, status.HTTP_201_CREATED)
 
-    def test__POST__addRepayment__whenCalledWithAuthentication__shouldReturn__OKStatus(self):
+    def test_POST_addRepayment_whenCalledWithAuthentication_shouldReturn_OKStatus(self):
         self.client.post(reverse('loan-list'), data=json.dumps(self.loan_payload),
                          content_type='application/json')
 
@@ -134,7 +135,7 @@ class TestSuperUserLoanAPIEndpoints(AuthenticatedSuperUser):
                                     data=json.dumps(self.repayment_payload), content_type='application/json')
         self.assertEquals(response.status_code, status.HTTP_201_CREATED)
 
-    def test__POST__addPrepayment__whenCalledWithAuthentication__shouldReturn__OKStatus(self):
+    def test_POST_addPrepayment_whenCalledWithAuthentication_shouldReturn_OKStatus(self):
         response = self.client.post(reverse('loan-list'), data=json.dumps(self.loan_payload),
                                     content_type='application/json')
         self.super_client.patch(reverse('loan-approve', kwargs={"pk": 1}))
@@ -142,7 +143,8 @@ class TestSuperUserLoanAPIEndpoints(AuthenticatedSuperUser):
                                     data=json.dumps(self.repayment_payload), content_type='application/json')
         self.assertEquals(response.status_code, status.HTTP_201_CREATED)
 
-class TestMultiClientAPIEndpoints(AutheticatedUser):
+
+class TestMultiClientAPIEndpoints(AuthenticatedUser):
     def setUp(self):
         super().setUp()
         self.user2 = User.objects.create_user('testuser2', 'testuser2@example.com', 'testpassword2')
@@ -161,9 +163,7 @@ class TestMultiClientAPIEndpoints(AutheticatedUser):
             "start_date": "25-11-2024"
         }
 
-
-
-    def test__GET__listLoans__whenCalledFromDifferentUsers__shouldReturnUserSpeceficLoans(self):
+    def test_GET_listLoans_whenCalledFromDifferentUsers_shouldReturnUserSpecificLoans(self):
         self.client.post(reverse('loan-list'), data=json.dumps(self.loan_payload),
                                     content_type='application/json')
         self.client.post(reverse('loan-list'), data=json.dumps(self.loan_payload),
@@ -209,11 +209,11 @@ class TestLoanApprovalAPIEndpoints(AuthenticatedSuperUser):
 
         self.client2.post(reverse('loan-list'), data=json.dumps(self.loan_payload2),content_type='application/json')
 
-    def test__GET__viewLoan__whenCreated__shouldHaveStatusAsPending(self):
+    def test_GET_viewLoan_whenCreated_shouldHaveStatusAsPending(self):
         response = self.client2.get(reverse('loan-detail', kwargs={"pk": 1}))
         self.assertEquals(response.data['status'],WorkflowStatus.PENDING)
 
-    def test__GET__viewLoan__whenApproved__shouldHaveStatusAsApproved(self):
+    def test_GET_viewLoan_whenApproved_shouldHaveStatusAsApproved(self):
         self.super_client.patch(reverse('loan-approve', kwargs={"pk": 1}))
         response = self.client2.get(reverse('loan-detail', kwargs={"pk": 1}))
         self.assertEquals(response.data['status'], WorkflowStatus.APPROVED)
@@ -241,17 +241,14 @@ class TestLoanPaymentAPIEndpoints(AuthenticatedSuperUser):
         self.repayment_payload2 = {
             "amount": 26
         }
-
-
-
         self.client2.post(reverse('loan-list'), data=json.dumps(self.loan_payload2), content_type='application/json')
 
-    def test__POST__AddRepayment__whenUnApproved__shouldThrowError(self):
+    def test_POST_AddRepayment_whenUnApproved_shouldThrowError(self):
         response = self.client2.post(reverse('repayment', kwargs={"loan_id": 1,"payment_id":4}),data=self.repayment_payload)
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(response.data['non_field_errors'][0],"Cannot add payments. The loan is under approval")
 
-    def test__POST__AddRepayment__whenApproved__shouldCreatePayment(self):
+    def test_POST_AddRepayment_whenApproved_shouldCreatePayment(self):
         self.super_client.login(username='superuser', password='superpassword')
         response = self.super_client.patch(reverse('loan-approve', kwargs={"pk": 1}))
         self.super_client.logout()
@@ -310,39 +307,41 @@ class TestLoanPaymentAPIEndpoints(AuthenticatedSuperUser):
         self.assertEquals(response.data['payments'][8]['status'], WorkflowStatus.PENDING)
         self.assertEquals(response.data['payments'][9]['status'], WorkflowStatus.PENDING)
 
-    # def test__POST__AddRepayment__whenApproved__shouldCreatePayment(self):
-    #     self.super_client.login(username='superuser', password='superpassword')
-    #     response = self.super_client.patch(reverse('loan-approve', kwargs={"pk": 1}))
-    #     self.super_client.logout()
-    #
-    #     self.client2.login(username='testuser2', password='testpassword2')
-    #     response = self.client2.post(reverse('repayment', kwargs={"pk": 1,"paymentSysId":4}),data=self.repayment_payload)
-    #
-    #     self.assertEquals(response.status_code, status.HTTP_201_CREATED)
-    #     self.assertEquals(response.data['outstanding_balance'],0.00)
-    #
-    #     response = self.client2.get(reverse('loan-detail',kwargs={'pk':1}))
-    #     self.assertEquals(response.data['payments'][0]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][1]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][2]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][3]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][4]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][5]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][6]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][7]['outstanding_balance'],24.00)
-    #     self.assertEquals(response.data['payments'][8]['outstanding_balance'],50.00)
-    #     self.assertEquals(response.data['payments'][9]['outstanding_balance'],50.00)
-    #
-    #     self.assertEquals(response.data['payments'][0]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][1]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][2]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][3]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][4]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][5]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][6]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][7]['status'], WorkflowStatus.PENDING)
-    #     self.assertEquals(response.data['payments'][8]['status'], WorkflowStatus.PENDING)
-    #     self.assertEquals(response.data['payments'][9]['status'], WorkflowStatus.PENDING)
+    def test_POST_AddRepayment_whenAddedToPaidStatus_shouldThrowError(self):
+        self.super_client.login(username='superuser', password='superpassword')
+        response = self.super_client.patch(reverse('loan-approve', kwargs={"pk": 1}))
+        self.super_client.logout()
+
+        self.client2.login(username='testuser2', password='testpassword2')
+        response = self.client2.post(reverse('repayment', kwargs={"loan_id": 1,"payment_id":7}),data=self.repayment_payload)
+
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+        self.assertEquals(response.data['outstanding_balance'],0.00)
+
+        self.client2.post(reverse('repayment', kwargs={"loan_id": 1,"payment_id":8}),data=self.repayment_payload2)
+
+        response = self.client2.post(reverse('repayment', kwargs={"loan_id": 1, "payment_id": 7}),
+                                     data=self.repayment_payload2)
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(response.data['non_field_errors'][0], "Cannot add payments. The payment is already paid.")
+
+        response = self.client2.post(reverse('repayment', kwargs={"loan_id": 1, "payment_id": 7}),
+                                     data={"amount":400})
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(response.data['non_field_errors'][0], "Repayment/ Prepayment amount cannot be greater than Outstanding Balance.")
+
+        response = self.client2.post(reverse('repayment', kwargs={"loan_id": 1, "payment_id": 8}),
+                                     data={"amount": 359})
+        response = self.client2.post(reverse('repayment', kwargs={"loan_id": 1, "payment_id": 7}),
+                                     data={"amount": 2})
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(response.data['non_field_errors'][0],
+                          "Cannot add payments. The loan is already paid.")
+
+
+
 
 
 
@@ -371,12 +370,12 @@ class TestLoanPrepaymentAPIEndpoints(AuthenticatedSuperUser):
 
         self.client2.post(reverse('loan-list'), data=json.dumps(self.loan_payload2), content_type='application/json')
 
-    def test__POST__AddPrepayment__whenUnApproved__shouldThrowError(self):
+    def test_POST_AddPrepayment_whenUnApproved_shouldThrowError(self):
         response = self.client2.post(reverse('prepayment', kwargs={"loan_id": 1}),data=self.repayment_payload)
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(response.data['non_field_errors'][0],"Cannot add payments. The loan is under approval")
 
-    def test__POST__AddPrepayment__whenApproved__shouldCreatePayment(self):
+    def test_POST_AddPrepayment_whenApproved_shouldCreatePayment(self):
         self.super_client.login(username='superuser', password='superpassword')
         response = self.super_client.patch(reverse('loan-approve', kwargs={"pk": 1}))
         self.super_client.logout()
@@ -432,43 +431,43 @@ class TestLoanPrepaymentAPIEndpoints(AuthenticatedSuperUser):
         self.assertEquals(response.data['payments'][8]['status'], WorkflowStatus.PENDING)
         self.assertEquals(response.data['payments'][9]['status'], WorkflowStatus.PENDING)
 
-        response = self.client2.post(reverse('prepayment', kwargs={"loan_id": 1}), data=self.repayment_payload)
-        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEquals(response.data['non_field_errors'][0], "Repayment/ Prepayment amount cannot be grater than outstanding Balance.")
+        # response = self.client2.post(reverse('prepayment', kwargs={"loan_id": 1}), data=self.repayment_payload)
+        # self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # self.assertEquals(response.data['non_field_errors'][0], "Repayment/ Prepayment amount cannot be greater than Outstanding Balance.")
 
-    # def test__POST__AddRepayment__whenApproved__shouldCreatePayment(self):
-    #     self.super_client.login(username='superuser', password='superpassword')
-    #     response = self.super_client.patch(reverse('loan-approve', kwargs={"pk": 1}))
-    #     self.super_client.logout()
-    #
-    #     self.client2.login(username='testuser2', password='testpassword2')
-    #     response = self.client2.post(reverse('repayment', kwargs={"pk": 1}),data=self.repayment_payload)
-    #
-    #     self.assertEquals(response.status_code, status.HTTP_201_CREATED)
-    #     self.assertEquals(response.data['outstanding_balance'],0.00)
-    #
-    #     response = self.client2.get(reverse('loan-detail',kwargs={'pk':1}))
-    #     self.assertEquals(response.data['payments'][0]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][1]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][2]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][3]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][4]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][5]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][6]['outstanding_balance'],0.00)
-    #     self.assertEquals(response.data['payments'][7]['outstanding_balance'],25.00)
-    #     self.assertEquals(response.data['payments'][8]['outstanding_balance'],50.00)
-    #     self.assertEquals(response.data['payments'][9]['outstanding_balance'],50.00)
-    #
-    #     self.assertEquals(response.data['payments'][0]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][1]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][2]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][3]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][4]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][5]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][6]['status'], WorkflowStatus.PAID)
-    #     self.assertEquals(response.data['payments'][7]['status'], WorkflowStatus.PENDING)
-    #     self.assertEquals(response.data['payments'][8]['status'], WorkflowStatus.PENDING)
-    #     self.assertEquals(response.data['payments'][9]['status'], WorkflowStatus.PENDING)
+    def test_POST_AddPrepayment_whenAddedToPaidStatus_shouldThrowError(self):
+        self.super_client.login(username='superuser', password='superpassword')
+        response = self.super_client.patch(reverse('loan-approve', kwargs={"pk": 1}))
+        self.super_client.logout()
+
+        self.client2.login(username='testuser2', password='testpassword2')
+        response = self.client2.post(reverse('prepayment', kwargs={"loan_id": 1}),
+                                     data=self.repayment_payload)
+
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+
+
+        self.client2.post(reverse('prepayment', kwargs={"loan_id": 1}),
+                          data=self.repayment_payload2)
+
+
+        response = self.client2.post(reverse('prepayment', kwargs={"loan_id": 1}),
+                                     data={"amount": 400})
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(response.data['non_field_errors'][0],
+                          "Repayment/ Prepayment amount cannot be greater than Outstanding Balance.")
+
+        response = self.client2.post(reverse('prepayment', kwargs={"loan_id": 1}),
+                                     data={"amount": 99})
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+        response = self.client2.post(reverse('prepayment', kwargs={"loan_id": 1}),
+                                     data={"amount": 2})
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(response.data['non_field_errors'][0],
+                          "Cannot add payments. The loan is already paid.")
+
+
 
 
 

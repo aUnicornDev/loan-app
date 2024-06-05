@@ -1,6 +1,4 @@
-from django.core.handlers import exception
-from rest_framework import status, viewsets
-from rest_framework.authentication import TokenAuthentication
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
@@ -10,7 +8,7 @@ from .serializers import LoanSerializer, PaymentSerializer, RepaymentSerializer
 from ..models import Loan, Payment, WorkflowStatus, Repayment
 
 
-class LoanViewSet(viewsets.ModelViewSet):
+class LoanViewSet(ModelViewSet):
     queryset = Loan.objects.all()
     serializer_class = LoanSerializer
     permission_classes = [IsAuthenticated]
@@ -30,7 +28,7 @@ class LoanViewSet(viewsets.ModelViewSet):
         return Response({'message': 'Loan approved'}, status=status.HTTP_201_CREATED)
 
 
-class RepaymentViewSet(viewsets.ModelViewSet):
+class RepaymentViewSet(ModelViewSet):
     queryset = Repayment.objects.all()
     serializer_class = RepaymentSerializer
 
@@ -47,7 +45,7 @@ class RepaymentViewSet(viewsets.ModelViewSet):
                 return Response(LoanSerializer(loan).data, status=status.HTTP_201_CREATED)
 
 
-class PaymentViewSet(viewsets.ModelViewSet):
+class PaymentViewSet(ModelViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
 
