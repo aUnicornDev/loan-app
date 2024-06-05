@@ -1,0 +1,925 @@
+{
+	"info": {
+		"_postman_id": "76648b2e-05a1-4d19-a292-7a618fbbc427",
+		"name": "Loan API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22654446"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 400\", function () {",
+									"  pm.expect(pm.response.code).to.equal(400);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has the required content type\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Username field is empty\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.username).to.be.an('array').that.is.empty;",
+									"});",
+									"",
+									"",
+									"pm.test(\"Email field should be empty\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData).to.be.an('object');",
+									"  pm.expect(responseData.email).to.be.an('array');",
+									"  pm.expect(responseData.email).to.have.lengthOf(1, \"Email field should be empty\");",
+									"  pm.expect(responseData.email[0]).to.be.empty;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\":\"aunicorndev\",\r\n    \"password\" : \"errornotfound\",\r\n    \"password2\" : \"errornotfound\",\r\n    \"first_name\" : \"Yashasvi\",\r\n    \"last_name\": \"Singh\",\r\n    \"email\" : \"aunicorndeveloper@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/auth/register/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"auth",
+								"register",
+								""
+							]
+						},
+						"description": "### Register User\n\nThis endpoint is used to register a new user.\n\n#### Request Body\n\n- `username` (string) - The username of the user.\n    \n- `password` (string) - The password for the user account.\n    \n- `password2` (string) - The confirmation of the password.\n    \n- `first_name` (string) - The first name of the user.\n    \n- `last_name` (string) - The last name of the user.\n    \n- `email` (string) - The email address of the user.\n    \n\n#### Response\n\nThe response for this request is a JSON object with the following schema:\n\n``` json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"status\": {\n      \"type\": \"string\"\n    },\n    \"message\": {\n      \"type\": \"string\"\n    }\n  }\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Token( Admin User )",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let token = pm.response.json()[\"token\"];\r",
+									"pm.collectionVariables.set(\"admin_token\", token);",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has the required fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.property('token');",
+									"    pm.expect(responseData).to.have.property('user_id');",
+									"    pm.expect(responseData).to.have.property('email');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Token is a non-empty string\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.token).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Token should not be empty\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"User_id is a non-negative integer\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.user_id).to.be.a('number').and.to.satisfy((value) => value >= 0, \"User_id should be a non-negative integer\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Email is in a valid email format\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData.email).to.be.a('string').and.to.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\" : \"ssv\",\r\n    \"password\" : \"errornotfound\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/auth/token/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"auth",
+								"token",
+								""
+							]
+						},
+						"description": "### Auth Token Request\n\nThis endpoint is used to authenticate and obtain a token for accessing protected resources.\n\n#### Request Body\n\n- `username` (string, required): The username of the user.\n    \n- `password` (string, required): The password of the user.\n    \n\n#### Response\n\nThe response will be in JSON format with the following schema:\n\n``` json\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"token\": {\n            \"type\": \"string\"\n        },\n        \"user_id\": {\n            \"type\": \"integer\"\n        },\n        \"email\": {\n            \"type\": \"string\"\n        }\n    }\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let token = pm.response.json()[\"token\"];\r",
+									"pm.collectionVariables.set(\"token\", token);",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has the required fields - token, user_id, and email\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.token).to.exist;",
+									"    pm.expect(responseData.user_id).to.exist;",
+									"    pm.expect(responseData.email).to.exist;",
+									"});",
+									"",
+									"",
+									"pm.test(\"Token is a non-empty string\", function () {",
+									"    const responseData = pm.response.json();",
+									"",
+									"    pm.expect(responseData.token).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Token should not be empty\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"User_id is a non-negative integer\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.user_id).to.be.a('number').and.to.satisfy((num) => num >= 0, \"User_id must be a non-negative integer\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Email is in a valid format\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData).to.be.an('object');",
+									"  pm.expect(responseData.email).to.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/, \"Email should be in a valid format\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\" : \"aunicorndev\",\r\n    \"password\" : \"errornotfound\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/auth/token/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"auth",
+								"token",
+								""
+							]
+						},
+						"description": "### Auth Token Request\n\nThis endpoint is used to authenticate and obtain a token for accessing protected resources.\n\n#### Request Body\n\nThe request body should be in JSON format and include the following parameters:\n\n- `username`: (string) The username of the user.\n    \n- `password`: (string) The password associated with the username.\n    \n\n#### Response\n\nUpon successful authentication, the response will include a token that can be used for accessing protected resources."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Loan",
+			"item": [
+				{
+					"name": "Add New Loan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let loan_id = pm.response.json()[\"id\"];",
+									"pm.collectionVariables.set(\"loan_id\", loan_id);",
+									"",
+									"pm.test(\"Response status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has the required fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.id).to.exist;",
+									"    pm.expect(responseData.status).to.exist;",
+									"    pm.expect(responseData.notional).to.exist;",
+									"    pm.expect(responseData.term).to.exist;",
+									"    pm.expect(responseData.frequency).to.exist;",
+									"    pm.expect(responseData.start_date).to.exist;",
+									"    pm.expect(responseData.total_cumulative_repayments).to.exist;",
+									"    pm.expect(responseData.payments).to.exist;",
+									"});",
+									"",
+									"",
+									"pm.test(\"Payments array and its elements are valid\", function () {",
+									"    const responseData = pm.response.json();",
+									"",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.payments).to.be.an('array').and.to.have.lengthOf.at.least(1, \"Payments array should not be empty\");",
+									"",
+									"    responseData.payments.forEach(function(payment) {",
+									"        pm.expect(payment).to.be.an('object');",
+									"        pm.expect(payment.id).to.be.a('number');",
+									"        pm.expect(payment.status).to.be.a('string');",
+									"        pm.expect(payment.amount).to.be.a('number');",
+									"        pm.expect(payment.payment_date).to.be.a('string');",
+									"        pm.expect(payment.outstanding_balance).to.be.a('number');",
+									"    });",
+									"});",
+									"",
+									"",
+									"pm.test(\"Amount in the payments array is a non-negative integer\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.have.property('payments').that.is.an('array');",
+									"",
+									"    responseData.payments.forEach(function(payment) {",
+									"        pm.expect(payment.amount).to.be.a('number');",
+									"        pm.expect(payment.amount).to.be.at.least(0);",
+									"    });",
+									"});",
+									"",
+									"",
+									"pm.test(\"Start date is in a valid date format\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData.start_date).to.match(/^\\d{4}-\\d{2}-\\d{2}$/);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "Token {{token}}",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"notional\": 3543,\r\n    \"term\": \"Weekly\",\r\n    \"frequency\": 12,   \r\n    \"start_date\": \"19-03-2024\"\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/loan/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"loan",
+								""
+							]
+						},
+						"description": "### Loan Application Endpoint\n\nThis endpoint allows the user to submit a loan application.\n\n#### Request Body\n\n- `notional` (number): The amount of the loan requested.\n    \n- `term` (string): The duration of the loan.\n    \n- `frequency` (number): The frequency of loan payments.\n    \n- `start_date` (string): The date when the loan will start.\n    \n\n#### Response\n\nThe response will be in JSON format and will include the following fields:\n\n- `id` (number): The unique identifier for the loan application.\n    \n- `status` (string): The status of the loan application.\n    \n- `notional` (number): The amount of the loan requested.\n    \n- `term` (string): The duration of the loan.\n    \n- `frequency` (number): The frequency of loan payments.\n    \n- `start_date` (string): The date when the loan will start.\n    \n- `total_cumulative_repayments` (number): The total cumulative repayments made towards the loan.\n    \n- `payments` (array): An array of payment objects containing:\n    \n    - `id` (number): The unique identifier for the payment.\n        \n    - `status` (string): The status of the payment.\n        \n    - `amount` (number): The amount of the payment.\n        \n    - `payment_date` (string): The date of the payment.\n        \n    - `outstanding_balance` (number): The outstanding balance after the payment.\n        \n\n#### JSON Schema for Response\n\n``` json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"id\": { \"type\": \"number\" },\n    \"status\": { \"type\": \"string\" },\n    \"notional\": { \"type\": \"number\" },\n    \"term\": { \"type\": \"string\" },\n    \"frequency\": { \"type\": \"number\" },\n    \"start_date\": { \"type\": \"string\" },\n    \"total_cumulative_repayments\": { \"type\": \"number\" },\n    \"payments\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": { \"type\": \"number\" },\n          \"status\": { \"type\": \"string\" },\n          \"amount\": { \"type\": \"number\" },\n          \"payment_date\": { \"type\": \"string\" },\n          \"outstanding_balance\": { \"type\": \"number\" }\n        }\n      }\n    }\n  }\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "List Loans",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"  pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has the required fields\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData).to.be.an('array');",
+									"  ",
+									"  responseData.forEach(function(loan) {",
+									"    pm.expect(loan).to.include.all.keys('id', 'status', 'notional', 'term', 'frequency', 'start_date', 'total_cumulative_repayments', 'payments');",
+									"  });",
+									"});",
+									"",
+									"",
+									"pm.test(\"Payments array is present and contains expected number of elements\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('array');",
+									"    pm.expect(responseData[0]).to.have.property('payments');",
+									"    pm.expect(responseData[0].payments).to.be.an('array');",
+									"    pm.expect(responseData[0].payments).to.have.lengthOf.at.least(1);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Status should be a non-empty string\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData).to.be.an('array');",
+									"  responseData.forEach(function (loan) {",
+									"    pm.expect(loan.status).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Status should not be empty\");",
+									"  });",
+									"});",
+									"",
+									"",
+									"pm.test(\"Amount, payment date, and outstanding balance in payments array are non-negative integers\", function () {",
+									"    const responseData = pm.response.json()[0][\"payments\"];",
+									"    ",
+									"    pm.expect(responseData).to.be.an('array');",
+									"    responseData.forEach(function(payment) {",
+									"        pm.expect(payment.amount).to.be.a('number').and.to.be.at.least(0);",
+									"        pm.expect(payment.payment_date).to.be.a('string');",
+									"        pm.expect(payment.outstanding_balance).to.be.a('number').and.to.be.at.least(0);",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"removeRefererHeaderOnRedirect": false,
+						"followAuthorizationHeader": true
+					},
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "Token {{token}}",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/loan/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"loan",
+								""
+							]
+						},
+						"description": "### Loan Approval Request\n\nThis endpoint is used to approve a specific loan with the ID of 1.\n\n#### Request\n\nThere is no request body for this request. The loan ID is included in the URL path.\n\n- Method: GET\n    \n- URL: {{localhost}}/loan/1/approve\n    \n\n#### Response\n\nThe response will be in JSON format with the following schema:\n\n``` json\n[\n    {\n        \"id\": \"number\",\n        \"status\": \"string\",\n        \"notional\": \"number\",\n        \"term\": \"string\",\n        \"frequency\": \"number\",\n        \"start_date\": \"string\",\n        \"total_repayed_amount\": \"number\",\n        \"payments\": [\n            {\n                \"id\": \"number\",\n                \"status\": \"string\",\n                \"amount\": \"number\",\n                \"payment_date\": \"string\",\n                \"balance_amount\": \"number\"\n            }\n        ]\n    }\n]\n\n ```\n\nThe response will include the details of the approved loan, including its ID, status, notional amount, term, frequency, start date, total repaid amount, and a list of payments with their respective details.\n\n- Status: 200\n    \n- Content-Type: application/json"
+					},
+					"response": []
+				},
+				{
+					"name": "Loan Approval",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 201\", function () {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has the required content type of application/json\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Message field is present in the response\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.have.property('message');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Message field is not empty\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData.message).to.exist.and.to.not.be.empty;",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is within an acceptable range\", function () {",
+									"  pm.expect(pm.response.responseTime).to.be.below(300);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"removeRefererHeaderOnRedirect": false,
+						"followAuthorizationHeader": true
+					},
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "Token {{admin_token}}",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/loan/{{loan_id}}/approve/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"loan",
+								"{{loan_id}}",
+								"approve",
+								""
+							]
+						},
+						"description": "### Loan Approval\n\nThis endpoint is used to approve a specific loan with the loan ID included in the URL.\n\n#### Request\n\nThe request should be sent as an HTTP PATCH to `{{localhost}}/loan/20/approve/`. The request body should include the necessary parameters to approve the loan.\n\n#### Response\n\nThe response will be a JSON object conforming to the following schema:\n\n``` json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"status\": {\n      \"type\": \"string\"\n    },\n    \"approved_by\": {\n      \"type\": \"string\"\n    },\n    \"approved_at\": {\n      \"type\": \"string\",\n      \"format\": \"date-time\"\n    }\n  }\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Loan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let payment_id = pm.response.json()[\"payments\"][0][\"id\"];",
+									"pm.collectionVariables.set(\"payment_id\", payment_id);",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has the required fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.property('id');",
+									"    pm.expect(responseData).to.have.property('status');",
+									"    pm.expect(responseData).to.have.property('notional');",
+									"    pm.expect(responseData).to.have.property('term');",
+									"    pm.expect(responseData).to.have.property('frequency');",
+									"    pm.expect(responseData).to.have.property('start_date');",
+									"    pm.expect(responseData).to.have.property('total_cumulative_repayments');",
+									"    pm.expect(responseData).to.have.property('payments');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Payments array should exist and be an array\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData).to.be.an('object');",
+									"  pm.expect(responseData.payments).to.be.an('array').and.to.have.length.above(0, \"Payments array should not be empty\");",
+									"  ",
+									"  responseData.payments.forEach(function(payment) {",
+									"    pm.expect(payment).to.be.an('object');",
+									"    pm.expect(payment.id).to.exist.and.to.be.a('number');",
+									"    pm.expect(payment.status).to.exist.and.to.be.a('string');",
+									"    pm.expect(payment.amount).to.exist.and.to.be.a('number');",
+									"    pm.expect(payment.payment_date).to.exist.and.to.be.a('string');",
+									"    pm.expect(payment.outstanding_balance).to.exist.and.to.be.a('number');",
+									"  });",
+									"});",
+									"",
+									"",
+									"pm.test(\"Verify payments attributes\", function () {",
+									"  const responseData = pm.response.json();",
+									"",
+									"  pm.expect(responseData).to.be.an('object');",
+									"  pm.expect(responseData.payments).to.be.an('array');",
+									"",
+									"  responseData.payments.forEach(function(payment) {",
+									"    pm.expect(payment.amount).to.be.a('number').and.to.be.at.least(0, \"Amount should be a non-negative number\");",
+									"    pm.expect(payment.payment_date).to.match(/^\\d{4}-\\d{2}-\\d{2}$/);",
+									"    pm.expect(payment.outstanding_balance).to.be.a('number').and.to.be.at.least(0, \"Outstanding balance should be a non-negative number\");",
+									"  });",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/loan/{{loan_id}}/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"loan",
+								"{{loan_id}}",
+								""
+							]
+						},
+						"description": "### This API endpoint retrieves the details of a specific loan with the ID 20.\n\n#### Request\n\n- Method: GET\n    \n- Endpoint: {{localhost}}/loan/20\n    \n\n#### Response\n\nThe response of this request can be documented as a JSON schema:\n\n``` json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"id\": {\"type\": \"number\"},\n    \"status\": {\"type\": \"string\"},\n    \"notional\": {\"type\": \"number\"},\n    \"term\": {\"type\": \"string\"},\n    \"frequency\": {\"type\": \"number\"},\n    \"start_date\": {\"type\": \"string\"},\n    \"total_cumulative_repayments\": {\"type\": \"number\"},\n    \"payments\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\"type\": \"number\"},\n          \"status\": {\"type\": \"string\"},\n          \"amount\": {\"type\": \"number\"},\n          \"payment_date\": {\"type\": \"string\"},\n          \"outstanding_balance\": {\"type\": \"number\"}\n        }\n      }\n    }\n  }\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Loan Prepayment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Response includes all the required fields\", function () {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseData).to.be.an('object');\r",
+									"    pm.expect(responseData.id).to.exist;\r",
+									"    pm.expect(responseData.status).to.exist;\r",
+									"    pm.expect(responseData.notional).to.exist;\r",
+									"    pm.expect(responseData.term).to.exist;\r",
+									"    pm.expect(responseData.frequency).to.exist;\r",
+									"    pm.expect(responseData.start_date).to.exist;\r",
+									"    pm.expect(responseData.total_cumulative_repayments).to.exist;\r",
+									"    pm.expect(responseData.payments).to.be.an('array');\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.expect(pm.response.code).to.equal(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Each payment object contains required fields\", function () {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseData.payments).to.be.an('array');\r",
+									"    responseData.payments.forEach(function(payment) {\r",
+									"        pm.expect(payment).to.have.property('id').that.is.a('number');\r",
+									"        pm.expect(payment).to.have.property('status').that.is.a('string');\r",
+									"        pm.expect(payment).to.have.property('amount').that.is.a('number');\r",
+									"        pm.expect(payment).to.have.property('payment_date').that.is.a('string');\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"amount\":20\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/loan/{{loan_id}}/prepayment/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"loan",
+								"{{loan_id}}",
+								"prepayment",
+								""
+							]
+						},
+						"description": "### Loan Prepayment\n\nThis endpoint allows the user to make a prepayment for a specific loan.\n\n#### Request Body\n\n- `amount` (number): The amount of prepayment to be made.\n    \n\n#### Response\n\nThe response will be in JSON format and will include the following fields:\n\n- `id` (number): The ID of the prepayment.\n    \n- `status` (string): The status of the prepayment.\n    \n- `notional` (number): The notional amount of the loan.\n    \n- `term` (string): The term of the loan.\n    \n- `frequency` (number): The frequency of payments.\n    \n- `start_date` (string): The start date of the loan.\n    \n- `total_cumulative_repayments` (number): The total cumulative repayments made towards the loan.\n    \n- `payments` (array): An array of payment objects, each containing the following fields:\n    \n    - `id` (number): The ID of the payment.\n        \n    - `status` (string): The status of the payment.\n        \n    - `amount` (number): The amount of the payment.\n        \n    - `payment_date` (string): The date of the payment.\n        \n    - `outstanding_balance` (number): The outstanding balance after the payment.\n        \n\n#### Example\n\n``` json\n{\n  \"amount\": 1000\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Payment Repayment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has the required fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.property('id');",
+									"    pm.expect(responseData).to.have.property('status');",
+									"    pm.expect(responseData).to.have.property('amount');",
+									"    pm.expect(responseData).to.have.property('payment_date');",
+									"    pm.expect(responseData).to.have.property('outstanding_balance');",
+									"    pm.expect(responseData).to.have.property('repayments');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Amount is a valid number\", function () {",
+									"    const responseData = pm.response.json();",
+									"",
+									"    pm.expect(responseData.amount).to.be.a('number', \"Amount should be a valid number\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Payment date is in a valid date format\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.payment_date).to.match(/^\\d{4}-\\d{2}-\\d{2}$/);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"  pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"amount\" : 10.411765\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/loan/{{loan_id}}/repayment/{{payment_id}}/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"loan",
+								"{{loan_id}}",
+								"repayment",
+								"{{payment_id}}",
+								""
+							]
+						},
+						"description": "### Payment Repayment\n\nThis endpoint is used to submit a repayment amount for a specific payment.\n\n#### Request Body\n\n- amount (number, required): The amount of repayment to be submitted.\n    \n\n#### Response\n\nThe response for this request is a JSON object conforming to the following schema:\n\n``` json\n{\n    \"id\": \"number\",\n    \"status\": \"string\",\n    \"amount\": \"number\",\n    \"payment_date\": \"string\",\n    \"outstanding_balance\": \"number\",\n    \"repayments\": [\n        {\n            \"created_date\": \"string\",\n            \"amount\": \"number\"\n        }\n    ]\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Payment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Content type is application/json\", function () {",
+									"  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Id field should exist and be a number\", function () {",
+									"  const responseData = pm.response.json();",
+									"  ",
+									"  pm.expect(responseData).to.be.an('object');",
+									"  pm.expect(responseData.id).to.exist;",
+									"  pm.expect(responseData.id).to.be.a('number');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Status field should exist and be a non-empty string\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.status).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Status should not be empty\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Amount should exist and be a number\", function () {",
+									"  const responseData = pm.response.json();",
+									"",
+									"  pm.expect(responseData.amount).to.exist;",
+									"  pm.expect(responseData.amount).to.be.a('number');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/loan/{{loan_id}}/payment/{{payment_id}}",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"loan",
+								"{{loan_id}}",
+								"payment",
+								"{{payment_id}}"
+							]
+						},
+						"description": "### Loan Payment Details\n\nThis endpoint retrieves the details of a specific payment for a loan.\n\n#### Request\n\n- Method: GET\n    \n- URL: `{{localhost}}/loan/38/payment/439`\n    \n\n#### Response\n\nThe response is in JSON format and follows the schema below:\n\n``` json\n{\n    \"id\": 0,\n    \"status\": \"\",\n    \"amount\": 0,\n    \"payment_date\": \"\",\n    \"outstanding_balance\": 0,\n    \"repayments\": [\n        {\n            \"created_date\": \"\",\n            \"amount\": 0\n        }\n    ]\n}\n\n ```\n\n- `id` (number): The unique identifier of the payment.\n    \n- `status` (string): The status of the payment.\n    \n- `amount` (number): The amount of the payment.\n    \n- `payment_date` (string): The date of the payment.\n    \n- `outstanding_balance` (number): The outstanding balance after the payment.\n    \n- `repayments` (array): An array of repayment objects.\n    - `created_date` (string): The date of the repayment.\n        \n    - `amount` (number): The amount of the repayment."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "Token {{token}}",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "Authorization",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "localhost",
+			"value": "http://127.0.0.1:8000"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "admin_token",
+			"value": ""
+		},
+		{
+			"key": "loan_id",
+			"value": ""
+		},
+		{
+			"key": "payment_id",
+			"value": ""
+		}
+	]
+}
