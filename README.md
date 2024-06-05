@@ -50,7 +50,7 @@ Start the local development server
     python manage.py runserver
     
     
-You can now access the server at http://localhost:8000
+You can now access the server at http://localhost:8000 (*It is adviced to used the postman collection after importing it.*)
 
 
 To run tests (Unit and Integration)
