@@ -65,7 +65,7 @@ A very basic doc around the functionality and files is given in the doc/doc.md f
 
 Postman export can be found in the docs folder.
 
-After starting the server, you can **View Documentation, Run Collection**  on the Loan API Copy collection. 
+After starting the server, you can **View Documentation, Run Collection (available with tests)**  on the Loan API Copy collection. 
  
 
 
